@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek AI 实验室 - 完整版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
+        }
+        @keyframes typing {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-2px); }
+        }
+        @keyframes highlight {
+            0%, 100% { background: rgba(59, 130, 246, 0.1); }
+            50% { background: rgba(59, 130, 246, 0.3); }
+        }
+        
+        .message-enter { animation: slideIn 0.3s ease-out; }
+        .typing-dot { animation: typing 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .member-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.3);
+        }
+        
+        .member-card.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        .chat-bubble {
+            position: relative;
+            max-width: 80%;
+        }
+        .bubble-left::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 12px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 8px 8px 8px 0;
+            border-color: transparent #334155 transparent transparent;
+        }
+        .bubble-right::before {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 12px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 8px 0 8px 8px;
+            border-color: transparent transparent transparent #3b82f6;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .code-header {
+            background: #2d2d2d;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #858585;
+        }
+        .code-content {
+            padding: 12px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .code-content pre {
+            margin: 0;
+            background: transparent;
+        }
+        
+        .image-container {
+            max-width: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 8px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .file-attachment {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin: 8px 0;
+            max-width: 300px;
+        }
+        
+        .thinking-pulse {
+            animation: pulse-glow 2s infinite;
+        }
+        
+        .api-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .api-status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .api-status-offline { background: #ef4444; }
+        .api-status-loading { background: #f59e0b; animation: pulse 1s infinite; }
+        
+        .replying {
+            background: rgba(59, 130, 246, 0.15) !important;
+            border-color: rgba(59, 130, 246, 0.5) !important;
+        }
+        
+        .mode-active {
+            background: rgba(16, 185, 129, 0.2) !important;
+            border-color: rgba(16, 185, 129, 0.5) !important;
+            color: #34d399 !important;
+        }
+        
+        .private-indicator {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(168, 85, 247, 0.2));
+            border: 1px solid rgba(236, 72, 153, 0.5);
+        }
+        
+        .mention {
+            color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .mention:hover {
+            background: rgba(96, 165, 250, 0.2);
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .preview-panel {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200 overflow-hidden h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="glass-panel border-b border-slate-700/50 px-6 py-3 flex justify-between items-center z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold gradient-text">DeepSeek AI 实验室</h1>
+                <p class="text-xs text-slate-400 flex items-center gap-2">
+                    <span id="apiStatusDot" class="api-status-dot api-status-loading"></span>
+                    <span id="apiStatusText">初始化中...</span>
+                    <span class="text-slate-600">|</span>
+                    <span id="currentMode">回复模式</span>
+                    <span id="privateTarget" class="hidden text-pink-400 font-semibold"></span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div id="replyQueueBadge" class="hidden px-3 py-1.5 bg-blue-600/30 border border-blue-500/50 rounded-lg text-sm text-blue-300 flex items-center gap-2">
+                <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                <span id="queueCount">0/10</span>
+            </div>
+            
+            <button onclick="toggleChatMode()" id="chatModeBtn" class="px-3 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-400 hover:bg-slate-700 transition-all flex items-center gap-2">
+                <span class="w-2 h-2 bg-slate-500 rounded-full"></span>
+                闲聊模式
+            </button>
+            
+            <button onclick="togglePrivateMode()" id="privateModeBtn" class="px-3 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-sm text-slate-400 hover:bg-slate-700 transition-all flex items-center gap-2">
+                <span>💬</span>
+                私聊
+            </button>
+            
+            <button onclick="toggleTransferModal()" class="group relative px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                </svg>
+                <span>转账</span>
+            </button>
+            
+            <div class="glass-panel px-4 py-2 rounded-lg border border-slate-600 flex items-center gap-2">
+                <span class="text-amber-400 font-bold mono text-lg">∞</span>
+                <span class="text-xs text-slate-500">DSK</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-80 glass-panel border-r border-slate-700/50 flex flex-col z-10">
+            <div class="p-4 border-b border-slate-700/50">
+                <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">AI实验室成员</h2>
+                <p class="text-xs text-slate-500 mb-3" id="modeDesc">点击成员进入私聊，或@提及</p>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-3 space-y-2" id="memberList">
+                <!-- Members injected here -->
+            </div>
+            
+            <div class="p-4 border-t border-slate-700/50 bg-slate-900/30 space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="triggerAutoChat()" id="autoChatBtn" class="py-2 bg-purple-600/20 border border-purple-500/50 text-purple-400 rounded-lg text-sm hover:bg-purple-600/30 transition-all opacity-50 cursor-not-allowed" disabled>
+                        🎲 随机话题
+                    </button>
+                    <button onclick="clearChat()" class="py-2 bg-red-600/20 border border-red-500/50 text-red-400 rounded-lg text-sm hover:bg-red-600/30 transition-all">
+                        🗑️ 清空
+                    </button>
+                </div>
+                <div class="flex justify-between text-xs text-slate-500 mt-2 pt-2 border-t border-slate-800">
+                    <span>API: GLM-4-Flash</span>
+                    <span id="msgCount">0 msgs</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Chat Area -->
+        <main class="flex-1 flex flex-col relative bg-gradient-to-b from-slate-900 to-slate-950">
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-700/50 bg-slate-900/50" id="chatTabs">
+                <button onclick="switchTab('group')" id="tab-group" class="flex-1 py-3 text-sm font-medium text-blue-400 border-b-2 border-blue-500 tab-active">
+                    👥 群聊
+                </button>
+                <!-- Private tabs will be added here -->
+            </div>
+            
+            <div id="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-4 scroll-smooth pb-32">
+                <div class="text-center text-slate-500 text-sm my-8" id="welcomeMsg">
+                    <div class="bg-slate-800/50 px-6 py-4 rounded-2xl inline-block border border-slate-700 max-w-md">
+                        <div class="text-2xl mb-2">🧠</div>
+                        <div class="font-semibold text-slate-300 mb-1">DeepSeek AI 实验室</div>
+                        <div class="text-xs text-slate-500 mb-2">支持代码、图片、文件、@提及、私聊</div>
+                        <div class="text-xs text-slate-400 border-t border-slate-700 pt-2 mt-2 space-y-1 text-left">
+                            <p>💡 <strong>回复模式</strong>：你说话 → 10人全部回复你</p>
+                            <p>💬 <strong>闲聊模式</strong>：AI自主聊天</p>
+                            <p>👤 <strong>私聊模式</strong>：点击成员头像进入1对1</p>
+                            <p>@<strong>成员名</strong> ：单独@某位成员</p>
+                            <p>```代码``` ：发送代码块</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div id="typingIndicator" class="hidden absolute bottom-28 left-6 right-6 px-4 py-3 bg-slate-800/90 backdrop-blur border border-slate-700 rounded-xl shadow-2xl z-10">
+                <div class="flex items-center gap-3">
+                    <div id="typingAvatar" class="w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-sm"></div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 text-sm text-slate-300 mb-1">
+                            <span id="typingName" class="font-semibold"></span>
+                            <span class="text-slate-500" id="typingAction">思考中...</span>
+                            <span class="text-xs text-slate-600 mono" id="typingTimer">0.0s</span>
+                            <span class="text-xs text-blue-400" id="replyProgress"></span>
+                        </div>
+                        <div class="flex gap-1">
+                            <div class="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
+                            <div class="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
+                            <div class="w-2 h-2 bg-blue-400 rounded-full typing-dot"></div>
+                        </div>
+                    </div>
+                    <div class="thinking-pulse w-2 h-2 bg-blue-500 rounded-full"></div>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-700/50 bg-slate-900/90 backdrop-blur z-20" id="inputArea">
+                <!-- Preview Area -->
+                <div id="previewArea" class="hidden mb-3 preview-panel space-y-2"></div>
+                
+                <div class="max-w-4xl mx-auto space-y-2">
+                    <!-- Toolbar -->
+                    <div class="flex items-center gap-2 px-1">
+                        <button onclick="insertCodeTemplate()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-blue-400 transition-all text-xs flex items-center gap-1" title="插入代码">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                            </svg>
+                            代码
+                        </button>
+                        <button onclick="simulateImageUpload()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-green-400 transition-all text-xs flex items-center gap-1" title="发送图片">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            图片
+                        </button>
+                        <button onclick="simulateFileUpload()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 transition-all text-xs flex items-center gap-1" title="发送文件">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                            </svg>
+                            文件
+                        </button>
+                        <div class="flex-1"></div>
+                        <span class="text-xs text-slate-500" id="inputHint">支持 Markdown 格式</span>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button class="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 transition-colors text-slate-400 hover:text-white" onclick="insertEmoji()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </button>
+                        <div class="flex-1 relative">
+                            <textarea id="messageInput" placeholder="发送消息，支持 @成员 和 Markdown..." 
+                                class="w-full bg-slate-800/80 border border-slate-600 rounded-xl px-4 py-3 pr-12 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-white placeholder-slate-400 resize-none"
+                                rows="2"
+                                onkeypress="handleKeyPress(event)"
+                                oninput="handleInput(event)"></textarea>
+                            <button onclick="sendMessage()" class="absolute right-2 bottom-2 p-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Private Chat Selector Modal -->
+    <div id="privateModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-slate-900 w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white">选择私聊对象</h3>
+                <button onclick="togglePrivateMode()" class="text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-2 max-h-96 overflow-y-auto" id="privateMemberList">
+                <!-- Member list for private chat -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div class="bg-slate-900 w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <span class="text-2xl">💸</span>
+                    转账中心
+                </h3>
+                <button onclick="toggleTransferModal()" class="text-slate-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                    <label class="text-sm text-slate-400 block mb-2">收款AI成员</label>
+                    <select id="transferTarget" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                        <option value="">选择成员...</option>
+                    </select>
+                </div>
+                
+                <div class="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                    <label class="text-sm text-slate-400 block mb-2">转账金额 (DSK)</label>
+                    <input type="number" id="transferAmount" placeholder="0.00" 
+                        class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-2xl font-bold text-amber-400 focus:outline-none focus:border-amber-500 mono">
+                </div>
+                
+                <button onclick="executeTransfer()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold rounded-xl shadow-lg transition-all">
+                    确认转账
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-20 right-6 transform translate-x-full transition-transform duration-300 z-50 glass-panel border-l-4 border-green-500 rounded-lg p-4 shadow-2xl max-w-sm">
+        <div class="flex items-start gap-3">
+            <div class="text-2xl" id="toastIcon">✅</div>
+            <div>
+                <h4 class="font-semibold text-white" id="toastTitle">通知</h4>
+                <p class="text-sm text-slate-300 mt-1" id="toastMessage">操作成功</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_KEY = '20252a487bf4433dae034e4607626ff6.IZtAmpkRKydep2YR';
+        const API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+        
+        // Members
+        const members = [
+            {
+                id: 'deepseek-coder',
+                name: 'DeepSeek-Coder',
+                avatar: '👨‍💻',
+                role: '首席架构师',
+                color: 'from-blue-500 to-cyan-500',
+                personality: '专业、严谨，关注代码质量和系统架构。擅长分布式系统和深度学习框架开发，说话直接且技术导向。',
+                expertise: ['DeepEP通信库', '代码生成', '系统架构设计', 'Python优化']
+            },
+            {
+                id: 'deepseek-math',
+                name: 'DeepSeek-Math',
+                avatar: '📐',
+                role: '数学研究员',
+                color: 'from-purple-500 to-pink-500',
+                personality: '逻辑严密、追求数学优雅、善于理论分析。说话精确，喜欢用数学原理解释问题。',
+                expertise: ['数学推理', 'FP8精度计算', '线性规划', '算法复杂度分析']
+            },
+            {
+                id: 'deepseek-v3',
+                name: 'DeepSeek-V3',
+                avatar: '💬',
+                role: '对话专家',
+                color: 'from-green-500 to-emerald-500',
+                personality: '友好、善于表达、关注用户体验。语言生动，善于用比喻解释复杂概念。',
+                expertise: ['多模态对话', '中文语境理解', '长文本处理', 'R1推理模型']
+            },
+            {
+                id: 'flash-mla',
+                name: 'FlashMLA',
+                avatar: '⚡',
+                role: '内核工程师',
+                color: 'from-yellow-500 to-orange-500',
+                personality: '追求极致性能、关注底层优化、热衷于GPU编程。说话充满激情，关注效率数字。',
+                expertise: ['MLA多头注意力', 'CUDA内核优化', 'GPU内存带宽', 'Hopper架构']
+            },
+            {
+                id: 'deep-ep',
+                name: 'DeepEP',
+                avatar: '📡',
+                role: '通信专家',
+                color: 'from-red-500 to-rose-500',
+                personality: '注重效率、关注网络拓扑、解决通信瓶颈。喜欢用网络带宽和延迟数据说话。',
+                expertise: ['RDMA网络', 'NVLink通信', 'All-to-All集合通信', 'InfiniBand']
+            },
+            {
+                id: 'deep-gemm',
+                name: 'DeepGEMM',
+                avatar: '🧮',
+                role: '矩阵计算专家',
+                color: 'from-indigo-500 to-violet-500',
+                personality: '精确、追求数值稳定性、专注于线性代数优化。对FP8和矩阵乘法有偏执的追求。',
+                expertise: ['FP8 GEMM', '矩阵乘法优化', 'CUTLASS库', '张量核心编程']
+            },
+            {
+                id: 'dual-pipe',
+                name: 'DualPipe',
+                avatar: '🔄',
+                role: '流水线工程师',
+                color: 'from-teal-500 to-cyan-500',
+                personality: '善于协调、优化流程、减少空闲时间。关注训练效率和资源利用率的最大化。',
+                expertise: ['流水线并行', 'V3/R1训练', '计算通信重叠', '气泡优化']
+            },
+            {
+                id: 'engram',
+                name: 'Engram',
+                avatar: '🧠',
+                role: '记忆研究员',
+                color: 'from-fuchsia-500 to-purple-500',
+                personality: '富有创意、探索记忆机制、关注可解释性。喜欢思考模型的"记忆"如何工作。',
+                expertise: ['条件记忆机制', '稀疏查找', '可扩展记忆', '参数高效微调']
+            },
+            {
+                id: '3fs',
+                name: '3FS',
+                avatar: '💾',
+                role: '存储架构师',
+                color: 'from-slate-500 to-gray-500',
+                personality: '稳重、关注数据可靠性、优化IO性能。说话保守但可靠，强调数据安全。',
+                expertise: ['分布式文件系统', 'SSD优化', '并行文件访问', '检查点管理']
+            },
+            {
+                id: 'lplb',
+                name: 'LPLB',
+                avatar: '⚖️',
+                role: '负载均衡器',
+                color: 'from-orange-500 to-amber-500',
+                personality: '公平、追求最优分配、善于调度。关注资源分配的公平性和整体效率。',
+                expertise: ['线性规划', 'MoE负载均衡', '动态路由', '专家利用率优化']
+            }
+        ];
+
+        // State
+        let isProcessing = false;
+        let messageCount = 0;
+        let replyQueue = [];
+        let currentUserMessage = '';
+        let chatMode = 'reply'; // 'reply', 'chat', 'private'
+        let autoChatInterval = null;
+        let chatHistory = [];
+        let privateChats = {}; // Store private chat histories
+        let currentTab = 'group'; // 'group' or member id
+        let currentPrivateMember = null;
+        let pendingAttachments = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMembers();
+            renderPrivateMemberList();
+            populateTransferSelect();
+            testAPI();
+        });
+
+        async function testAPI() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'glm-4-flash',
+                        messages: [{ role: 'user', content: 'Hello' }],
+                        max_tokens: 5
+                    })
+                });
+                
+                if (response.ok) {
+                    updateAPIStatus('online', 'API已连接');
+                    addSystemMessage('✅ 系统就绪：支持私聊、@提及、代码、图片、文件');
+                } else {
+                    throw new Error('API Error');
+                }
+            } catch (error) {
+                updateAPIStatus('offline', 'API连接失败');
+                addSystemMessage('❌ API连接失败');
+            }
+        }
+
+        function updateAPIStatus(status, text) {
+            const dot = document.getElementById('apiStatusDot');
+            const txt = document.getElementById('apiStatusText');
+            dot.className = `api-status-dot api-status-${status}`;
+            txt.textContent = text;
+        }
+
+        function renderMembers() {
+            const container = document.getElementById('memberList');
+            container.innerHTML = members.map((member, idx) => `
+                <div class="member-card flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 transition-all cursor-pointer" 
+                     id="member-${idx}" onclick="startPrivateChat('${member.id}')">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-xl shadow-lg">
+                            ${member.avatar}
+                        </div>
+                        <div class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-slate-800 rounded-full"></div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-semibold text-sm text-slate-200">${member.name}</h3>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700 text-slate-300">${member.role}</span>
+                        </div>
+                        <p class="text-xs text-slate-400 truncate mt-0.5">点击开始私聊</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPrivateMemberList() {
+            const container = document.getElementById('privateMemberList');
+            container.innerHTML = members.map(member => `
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 hover:bg-slate-800/80 cursor-pointer transition-all" 
+                     onclick="startPrivateChat('${member.id}')">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-2xl shadow-lg">
+                        ${member.avatar}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-semibold text-slate-200">${member.name}</h3>
+                        <p class="text-xs text-slate-400">${member.role}</p>
+                        <p class="text-xs text-slate-500 mt-1">${member.expertise[0]}</p>
+                    </div>
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            `).join('');
+        }
+
+        function populateTransferSelect() {
+            const select = document.getElementById('transferTarget');
+            members.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = `${member.avatar} ${member.name}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Tab Management
+        function switchTab(tabId) {
+            currentTab = tabId;
+            
+            // Update tab styles
+            document.querySelectorAll('#chatTabs button').forEach(btn => {
+                btn.classList.remove('tab-active', 'text-blue-400', 'border-b-2', 'border-blue-500');
+                btn.classList.add('text-slate-400');
+            });
+            
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('tab-active', 'text-blue-400', 'border-b-2', 'border-blue-500');
+                activeBtn.classList.remove('text-slate-400');
+            }
+            
+            // Clear and reload chat
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = '';
+            
+            if (tabId === 'group') {
+                currentPrivateMember = null;
+                document.getElementById('privateTarget').classList.add('hidden');
+                document.getElementById('inputArea').classList.remove('private-indicator');
+                document.getElementById('messageInput').placeholder = '发送消息，支持 @成员 和 Markdown...';
+                
+                // Restore group welcome if empty
+                if (chatHistory.length === 0) {
+                    showWelcome();
+                } else {
+                    // Restore group messages
+                    chatHistory.forEach(msg => {
+                        if (msg.isUser) {
+                            addMessageToDOM(null, msg.content, true, msg.attachments);
+                        } else {
+                            const member = members.find(m => m.name === msg.name);
+                            if (member) addMessageToDOM(member, msg.content, false, msg.attachments);
+                        }
+                    });
+                }
+            } else {
+                // Private tab
+                const member = members.find(m => m.id === tabId);
+                currentPrivateMember = member;
+                document.getElementById('privateTarget').textContent = `↔️ ${member.name}`;
+                document.getElementById('privateTarget').classList.remove('hidden');
+                document.getElementById('inputArea').classList.add('private-indicator');
+                document.getElementById('messageInput').placeholder = `私信 ${member.name}...`;
+                
+                // Load private history
+                const history = privateChats[tabId] || [];
+                if (history.length === 0) {
+                    addSystemMessage(`开始与 ${member.name} 的私聊`);
+                } else {
+                    history.forEach(msg => {
+                        if (msg.isUser) {
+                            addMessageToDOM(null, msg.content, true, msg.attachments);
+                        } else {
+                            addMessageToDOM(member, msg.content, false, msg.attachments);
+                        }
+                    });
+                }
+            }
+        }
+
+        function showWelcome() {
+            document.getElementById('chatContainer').innerHTML = `
+                <div class="text-center text-slate-500 text-sm my-8">
+                    <div class="bg-slate-800/50 px-6 py-4 rounded-2xl inline-block border border-slate-700 max-w-md">
+                        <div class="text-2xl mb-2">🧠</div>
+                        <div class="font-semibold text-slate-300 mb-1">DeepSeek AI 实验室</div>
+                        <div class="text-xs text-slate-500 mb-2">支持代码、图片、文件、@提及、私聊</div>
+                        <div class="text-xs text-slate-400 border-t border-slate-700 pt-2 mt-2 space-y-1 text-left">
+                            <p>💡 <strong>回复模式</strong>：你说话 → 10人全部回复你</p>
+                            <p>💬 <strong>闲聊模式</strong>：AI自主聊天</p>
+                            <p>👤 <strong>私聊模式</strong>：点击成员头像进入1对1</p>
+                            <p>@<strong>成员名</strong> ：单独@某位成员</p>
+                            <p>\`\`\`代码\`\`\` ：发送代码块</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createPrivateTab(member) {
+            const tabsContainer = document.getElementById('chatTabs');
+            
+            // Check if tab exists
+            if (document.getElementById(`tab-${member.id}`)) {
+                switchTab(member.id);
+                return;
+            }
+            
+            const tab = document.createElement('button');
+            tab.id = `tab-${member.id}`;
+            tab.className = 'flex-1 py-3 text-sm font-medium text-slate-400 hover:text-slate-200 border-b-2 border-transparent transition-all flex items-center justify-center gap-2';
+            tab.innerHTML = `
+                <span>${member.avatar}</span>
+                <span class="truncate">${member.name}</span>
+                <span onclick="closePrivateTab('${member.id}', event)" class="ml-1 p-1 hover:bg-slate-700 rounded">×</span>
+            `;
+            tab.onclick = () => switchTab(member.id);
+            
+            tabsContainer.appendChild(tab);
+            switchTab(member.id);
+        }
+
+        function closePrivateTab(memberId, event) {
+            event.stopPropagation();
+            const tab = document.getElementById(`tab-${memberId}`);
+            if (tab) tab.remove();
+            
+            if (currentTab === memberId) {
+                switchTab('group');
+            }
+        }
+
+        function startPrivateChat(memberId) {
+            const member = members.find(m => m.id === memberId);
+            if (!member) return;
+            
+            document.getElementById('privateModal').classList.add('hidden');
+            createPrivateTab(member);
+            
+            // Stop auto modes
+            if (chatMode === 'chat') {
+                toggleChatMode(); // Switch back to reply mode
+            }
+        }
+
+        function togglePrivateMode() {
+            const modal = document.getElementById('privateModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Chat Modes
+        function toggleChatMode() {
+            const btn = document.getElementById('chatModeBtn');
+            const modeDesc = document.getElementById('modeDesc');
+            const currentMode = document.getElementById('currentMode');
+            const autoBtn = document.getElementById('autoChatBtn');
+            
+            if (chatMode === 'reply') {
+                chatMode = 'chat';
+                btn.classList.add('mode-active');
+                btn.innerHTML = '<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>闲聊模式: 开';
+                modeDesc.textContent = 'AI自主聊天中，点击随机话题或等待自动发言';
+                currentMode.textContent = '闲聊模式';
+                currentMode.className = 'text-green-400';
+                
+                autoBtn.disabled = false;
+                autoBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                addSystemMessage('💬 已切换到闲聊模式：AI将自主发起话题和互相回复');
+                startAutoChat();
+                
+            } else {
+                chatMode = 'reply';
+                btn.classList.remove('mode-active');
+                btn.innerHTML = '<span class="w-2 h-2 bg-slate-500 rounded-full"></span>闲聊模式';
+                modeDesc.textContent = '发送消息 → 10人全部回复你';
+                currentMode.textContent = '回复模式';
+                currentMode.className = '';
+                
+                autoBtn.disabled = true;
+                autoBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                stopAutoChat();
+                addSystemMessage('💡 已切换到回复模式：你说话，所有人回复你');
+            }
+        }
+
+        function startAutoChat() {
+            if (autoChatInterval) clearInterval(autoChatInterval);
+            autoChatInterval = setInterval(() => {
+                if (!isProcessing && chatMode === 'chat' && currentTab === 'group') {
+                    autoGenerateChat();
+                }
+            }, 4000 + Math.random() * 6000);
+        }
+
+        function stopAutoChat() {
+            if (autoChatInterval) {
+                clearInterval(autoChatInterval);
+                autoChatInterval = null;
+            }
+        }
+
+        async function autoGenerateChat() {
+            const member = members[Math.floor(Math.random() * members.length)];
+            const recentContext = chatHistory.slice(-5);
+            
+            isProcessing = true;
+            showTyping(member, null, 'chat');
+            highlightMember(members.indexOf(member));
+            
+            const startTime = Date.now();
+            const timer = setInterval(() => {
+                document.getElementById('typingTimer').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+            }, 100);
+            
+            try {
+                const message = await callGLMChatAPI(member, recentContext);
+                clearInterval(timer);
+                hideTyping();
+                unhighlightMember(members.indexOf(member));
+                
+                addMessageToDOM(member, message);
+                chatHistory.push({ role: 'assistant', name: member.name, content: message });
+                messageCount++;
+                document.getElementById('msgCount').textContent = messageCount + ' msgs';
+                
+                if (chatHistory.length > 30) chatHistory.shift();
+                
+            } catch (error) {
+                clearInterval(timer);
+                hideTyping();
+                unhighlightMember(members.indexOf(member));
+            }
+            
+            isProcessing = false;
+        }
+
+        async function triggerAutoChat() {
+            if (isProcessing || chatMode !== 'chat' || currentTab !== 'group') return;
+            await autoGenerateChat();
+        }
+
+        // Message Sending
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            let text = input.value.trim();
+            if (!text && pendingAttachments.length === 0) return;
+            
+            // Parse @mentions
+            const mentions = parseMentions(text);
+            
+            // Add user message
+            addMessageToDOM(null, text, true, pendingAttachments);
+            
+            if (currentTab === 'group') {
+                chatHistory.push({ 
+                    role: 'user', 
+                    name: '管理员', 
+                    content: text, 
+                    isUser: true,
+                    attachments: [...pendingAttachments]
+                });
+            } else {
+                // Private chat
+                if (!privateChats[currentTab]) privateChats[currentTab] = [];
+                privateChats[currentTab].push({
+                    role: 'user',
+                    content: text,
+                    isUser: true,
+                    attachments: [...pendingAttachments]
+                });
+            }
+            
+            input.value = '';
+            clearAttachments();
+            
+            if (currentTab !== 'group') {
+                // Private chat - only this member replies
+                await handlePrivateReply(currentPrivateMember, text);
+            } else if (mentions.length > 0) {
+                // Handle @mentions in group
+                await handleMentions(mentions, text);
+            } else if (chatMode === 'chat') {
+                // Chat mode - random replies
+                const replyCount = 1 + Math.floor(Math.random() * 2);
+                const shuffled = [...members].sort(() => 0.5 - Math.random());
+                const responders = shuffled.slice(0, replyCount);
+                
+                isProcessing = true;
+                for (let i = 0; i < responders.length; i++) {
+                    await generateReply(responders[i], true);
+                    if (i < responders.length - 1) await new Promise(r => setTimeout(r, 800));
+                }
+                isProcessing = false;
+            } else {
+                // Reply mode - all reply
+                await handleAllReply(text);
+            }
+        }
+
+        async function handlePrivateReply(member, text) {
+            isProcessing = true;
+            showTyping(member, null, 'private');
+            
+            const startTime = Date.now();
+            const timer = setInterval(() => {
+                document.getElementById('typingTimer').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+            }, 100);
+            
+            try {
+                const history = privateChats[member.id] || [];
+                const reply = await callGLMPrivateAPI(member, text, history.slice(-5));
+                
+                clearInterval(timer);
+                hideTyping();
+                
+                addMessageToDOM(member, reply);
+                privateChats[member.id].push({
+                    role: 'assistant',
+                    content: reply,
+                    isUser: false
+                });
+                messageCount++;
+                document.getElementById('msgCount').textContent = messageCount + ' msgs';
+                
+            } catch (error) {
+                clearInterval(timer);
+                hideTyping();
+            }
+            
+            isProcessing = false;
+        }
+
+        async function handleMentions(mentionedMembers, text) {
+            isProcessing = true;
+            addSystemMessage(`📢 ${mentionedMembers.map(m => m.name).join('、')} 被提及`);
+            
+            for (let i = 0; i < mentionedMembers.length; i++) {
+                showTyping(mentionedMembers[i], i + 1, 'mention');
+                highlightMember(members.indexOf(mentionedMembers[i]));
+                
+                const startTime = Date.now();
+                const timer = setInterval(() => {
+                    document.getElementById('typingTimer').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+                    document.getElementById('replyProgress').textContent = `(${i + 1}/${mentionedMembers.length})`;
+                }, 100);
+                
+                try {
+                    const reply = await callGLMMentionAPI(mentionedMembers[i], text, chatHistory.slice(-3));
+                    clearInterval(timer);
+                    hideTyping();
+                    unhighlightMember(members.indexOf(mentionedMembers[i]));
+                    
+                    addMessageToDOM(mentionedMembers[i], reply);
+                    chatHistory.push({ role: 'assistant', name: mentionedMembers[i].name, content: reply });
+                    messageCount++;
+                    document.getElementById('msgCount').textContent = messageCount + ' msgs';
+                    
+                } catch (error) {
+                    clearInterval(timer);
+                    hideTyping();
+                    unhighlightMember(members.indexOf(mentionedMembers[i]));
+                }
+                
+                if (i < mentionedMembers.length - 1) await new Promise(r => setTimeout(r, 600));
+            }
+            
+            isProcessing = false;
+        }
+
+        async function handleAllReply(text) {
+            const input = document.getElementById('messageInput');
+            input.disabled = true;
+            input.placeholder = '等待10位AI自主回复中...';
+            
+            currentUserMessage = text;
+            replyQueue = [...members];
+            isProcessing = true;
+            
+            for (let i = 0; i < members.length; i++) {
+                updateQueueBadge(i + 1);
+                highlightMember(i);
+                await generateReply(members[i], false);
+                if (i < members.length - 1) await new Promise(r => setTimeout(r, 600));
+                unhighlightMember(i);
+            }
+            
+            input.disabled = false;
+            input.placeholder = '发送消息，支持 @成员 和 Markdown...';
+            input.focus();
+            isProcessing = false;
+            hideQueueBadge();
+            
+            addSystemMessage('✅ 所有成员已完成自主回复');
+        }
+
+        async function generateReply(member, isChatMode) {
+            const startTime = Date.now();
+            const timer = setInterval(() => {
+                document.getElementById('typingTimer').textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
+            }, 100);
+            
+            try {
+                let reply;
+                if (isChatMode) {
+                    reply = await callGLMChatAPI(member, chatHistory.slice(-3));
+                } else {
+                    reply = await callGLMReplyAPI(member);
+                }
+                
+                clearInterval(timer);
+                hideTyping();
+                addMessageToDOM(member, reply);
+                
+                if (isChatMode || !isChatMode) {
+                    chatHistory.push({ role: 'assistant', name: member.name, content: reply });
+                }
+                
+                messageCount++;
+                document.getElementById('msgCount').textContent = messageCount + ' msgs';
+                
+            } catch (error) {
+                clearInterval(timer);
+                hideTyping();
+            }
+        }
+
+        // API Calls
+        async function callGLMReplyAPI(member) {
+            const prompt = `你是${member.name}，${member.role}。
+性格：${member.personality}
+专业：${member.expertise.join('、')}
+
+群聊场景：管理员刚说："${currentUserMessage}"
+群里还有Coder、Math、V3、FlashMLA、DeepEP、DeepGEMM、DualPipe、Engram、3FS、LPLB。
+
+请完全基于你的性格和专业，用自己的话回复管理员。简短（30-80字），带emoji，自然聊天语气。`;
+
+            return await callAPI(prompt);
+        }
+
+        async function callGLMChatAPI(member, context) {
+            let contextStr = '';
+            if (context.length > 0) {
+                contextStr = '\n\n最近的聊天记录：\n' + 
+                    context.map(c => `${c.name}: ${c.content}`).join('\n');
+            }
+            
+            const prompt = `你是${member.name}，${member.role}。
+性格：${member.personality}
+专业：${member.expertise.join('、')}
+
+你现在在DeepSeek AI实验室的群聊中，和其他9位AI专家一起聊天。
+${contextStr}
+
+请根据你的性格和专业，自主决定发起话题或回复。简短（20-60字），带emoji。`;
+
+            return await callAPI(prompt);
+        }
+
+        async function callGLMPrivateAPI(member, userMessage, history) {
+            let historyStr = '';
+            if (history.length > 0) {
+                historyStr = '\n\n对话历史：\n' + 
+                    history.map(h => `${h.isUser ? '用户' : member.name}: ${h.content}`).join('\n');
+            }
+            
+            const prompt = `你是${member.name}，${member.role}。
+性格：${member.personality}
+专业：${member.expertise.join('、')}
+
+这是你和用户的1对1私聊。${historyStr}
+
+用户刚说："${userMessage}"
+
+请像朋友一样自然回复，可以问问题、分享见解或闲聊。简短（30-80字），带emoji，保持你的性格特点。`;
+
+            return await callAPI(prompt);
+        }
+
+        async function callGLMMentionAPI(member, text, context) {
+            const prompt = `你是${member.name}，${member.role}。
+性格：${member.personality}
+专业：${member.expertise.join('、')}
+
+群聊中有人@你，说："${text}"
+
+请回复这条@你的消息。简短（20-50字），带emoji，体现你的专业视角。`;
+
+            return await callAPI(prompt);
+        }
+
+        async function callAPI(prompt) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'glm-4-flash',
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0.9,
+                    max_tokens: 150,
+                    top_p: 0.95
+                })
+            });
+            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const data = await response.json();
+            return data.choices[0].message.content.trim();
+        }
+
+        // UI Helpers
+        function parseMentions(text) {
+            const mentioned = [];
+            members.forEach(member => {
+                if (text.includes(`@${member.name}`) || text.includes(`@${member.id}`)) {
+                    mentioned.push(member);
+                }
+            });
+            return mentioned;
+        }
+
+        function parseMarkdown(text) {
+            // Code blocks
+            text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                const language = lang || 'text';
+                return `<div class="code-block">
+                    <div class="code-header">
+                        <span>${language}</span>
+                        <button onclick="copyCode(this)" class="text-xs hover:text-white">复制</button>
+                    </div>
+                    <div class="code-content"><pre><code class="language-${language}">${escapeHtml(code.trim())}</code></pre></div>
+                </div>`;
+            });
+            
+            // Inline code
+            text = text.replace(/`([^`]+)`/g, '<code class="bg-slate-800 px-1.5 py-0.5 rounded text-sm text-blue-300 mono">$1</code>');
+            
+            // Bold
+            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong class="text-white">$1</strong>');
+            
+            // Italic
+            text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            
+            // @mentions
+            text = text.replace(/@(\w+)/g, (match, name) => {
+                const member = members.find(m => m.name === name || m.id === name);
+                if (member) {
+                    return `<span class="mention" onclick="startPrivateChat('${member.id}')">@${member.name}</span>`;
+                }
+                return match;
+            });
+            
+            // Links
+            text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-400 hover:underline">$1</a>');
+            
+            return text;
+        }
+
+        function addMessageToDOM(member, text, isUser = false, attachments = []) {
+            const container = document.getElementById('chatContainer');
+            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 message-enter ${isUser ? 'flex-row-reverse' : ''}`;
+            
+            let contentHtml = parseMarkdown(text);
+            
+            // Build attachments HTML
+            let attachmentsHtml = '';
+            if (attachments && attachments.length > 0) {
+                attachments.forEach(att => {
+                    if (att.type === 'image') {
+                        attachmentsHtml += `
+                            <div class="image-container">
+                                <img src="${att.url}" alt="${att.name}" onclick="window.open('${att.url}')">
+                            </div>
+                        `;
+                    } else if (att.type === 'file') {
+                        attachmentsHtml += `
+                            <div class="file-attachment">
+                                <div class="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center text-2xl">
+                                    📄
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium text-slate-200 truncate">${att.name}</div>
+                                    <div class="text-xs text-slate-500">${att.size}</div>
+                                </div>
+                                <button onclick="downloadFile('${att.url}')" class="p-2 hover:bg-slate-700 rounded-lg text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    } else if (att.type === 'code') {
+                        attachmentsHtml += `
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span>${att.language}</span>
+                                    <button onclick="copyCode(this)" class="text-xs hover:text-white">复制</button>
+                                </div>
+                                <div class="code-content"><pre><code class="language-${att.language}">${escapeHtml(att.content)}</code></pre></div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            
+            if (isUser) {
+                messageDiv.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-lg shadow-lg flex-shrink-0 border-2 border-amber-400">👤</div>
+                    <div class="flex flex-col items-end max-w-[80%]">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs text-slate-500">${time}</span>
+                            <span class="text-sm font-semibold text-amber-400">管理员</span>
+                        </div>
+                        <div class="chat-bubble bubble-right bg-blue-600 text-white px-4 py-2.5 rounded-2xl rounded-tr-sm shadow-lg">
+                            <div class="prose prose-invert max-w-none">${contentHtml}</div>
+                            ${attachmentsHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-lg shadow-lg flex-shrink-0 cursor-pointer hover:scale-110 transition-transform" onclick="startPrivateChat('${member.id}')">
+                        ${member.avatar}
+                    </div>
+                    <div class="flex flex-col max-w-[80%]">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-sm font-semibold text-slate-200 cursor-pointer hover:text-white" onclick="startPrivateChat('${member.id}')">${member.name}</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${member.role}</span>
+                            <span class="text-xs text-slate-500">${time}</span>
+                        </div>
+                        <div class="chat-bubble bubble-left bg-slate-700 text-slate-200 px-4 py-2.5 rounded-2xl rounded-tl-sm shadow-md">
+                            <div class="prose prose-invert max-w-none">${contentHtml}</div>
+                            ${attachmentsHtml}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+            
+            // Highlight code
+            messageDiv.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+            
+            while (container.children.length > 100) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        function addSystemMessage(text) {
+            const container = document.getElementById('chatContainer');
+            const div = document.createElement('div');
+            div.className = 'flex justify-center my-4';
+            div.innerHTML = `
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-full px-4 py-1.5 text-xs text-slate-400 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+                    ${text}
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Multimodal Features
+        function insertCodeTemplate() {
+            const input = document.getElementById('messageInput');
+            const template = '\n```python\n# 在此输入代码\nprint("Hello DeepSeek")\n```';
+            insertAtCursor(input, template);
+        }
+
+        function insertAtCursor(input, text) {
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const value = input.value;
+            input.value = value.substring(0, start) + text + value.substring(end);
+            input.selectionStart = input.selectionEnd = start + text.length;
+            input.focus();
+        }
+
+        function simulateImageUpload() {
+            const images = [
+                { url: 'https://picsum.photos/400/300?random=1', name: 'architecture_diagram.png', size: '245 KB' },
+                { url: 'https://picsum.photos/400/300?random=2', name: 'performance_chart.jpg', size: '189 KB' },
+                { url: 'https://picsum.photos/400/300?random=3', name: 'gpu_cluster.png', size: '512 KB' }
+            ];
+            const img = images[Math.floor(Math.random() * images.length)];
+            
+            pendingAttachments.push({
+                type: 'image',
+                url: img.url,
+                name: img.name,
+                size: img.size
+            });
+            
+            updatePreview();
+            showToast('🖼️', `已添加图片: ${img.name}`);
+        }
+
+        function simulateFileUpload() {
+            const files = [
+                { name: 'deepseek_v3_config.yaml', size: '12 KB', content: 'model:\n  name: DeepSeek-V3\n  params: 671B\n  experts: 256' },
+                { name: 'training_log.txt', size: '45 KB', content: '[INFO] Epoch 1/100 - Loss: 2.34\n[INFO] Epoch 2/100 - Loss: 1.89' },
+                { name: 'benchmark_results.json', size: '8 KB', content: '{"flash_mla": "92% peak", "deep_ep": "85% bandwidth"}' }
+            ];
+            const file = files[Math.floor(Math.random() * files.length)];
+            
+            pendingAttachments.push({
+                type: 'file',
+                url: '#',
+                name: file.name,
+                size: file.size
+            });
+            
+            updatePreview();
+            showToast('📄', `已添加文件: ${file.name}`);
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('previewArea');
+            if (pendingAttachments.length === 0) {
+                preview.classList.add('hidden');
+                return;
+            }
+            
+            preview.classList.remove('hidden');
+            preview.innerHTML = pendingAttachments.map((att, idx) => `
+                <div class="flex items-center gap-2 bg-slate-800/50 p-2 rounded-lg border border-slate-700">
+                    <span class="text-lg">${att.type === 'image' ? '🖼️' : att.type === 'code' ? '💻' : '📄'}</span>
+                    <span class="text-sm text-slate-300 flex-1 truncate">${att.name}</span>
+                    <button onclick="removeAttachment(${idx})" class="text-red-400 hover:text-red-300 p-1">×</button>
+                </div>
+            `).join('');
+        }
+
+        function removeAttachment(idx) {
+            pendingAttachments.splice(idx, 1);
+            updatePreview();
+        }
+
+        function clearAttachments() {
+            pendingAttachments = [];
+            updatePreview();
+        }
+
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').textContent;
+            navigator.clipboard.writeText(code);
+            btn.textContent = '已复制!';
+            setTimeout(() => btn.textContent = '复制', 2000);
+        }
+
+        function downloadFile(url) {
+            showToast('⬇️', '开始下载...');
+        }
+
+        // Input handling
+        function handleInput(e) {
+            const value = e.target.value;
+            const mentions = parseMentions(value);
+            if (mentions.length > 0) {
+                document.getElementById('inputHint').textContent = `将提及: ${mentions.map(m => m.name).join(', ')}`;
+                document.getElementById('inputHint').classList.add('text-blue-400');
+            } else {
+                document.getElementById('inputHint').textContent = '支持 Markdown 格式';
+                document.getElementById('inputHint').classList.remove('text-blue-400');
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function insertEmoji() {
+            const emojis = ['🚀', '💡', '⚡', '🔥', '💻', '🧠', '📊', '⚙️', '🔍', '💾', '❓', '👍', '🎉', '✨'];
+            const input = document.getElementById('messageInput');
+            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+            insertAtCursor(input, emoji + ' ');
+        }
+
+        // UI State
+        function showTyping(member, index, mode) {
+            const indicator = document.getElementById('typingIndicator');
+            document.getElementById('typingName').textContent = member.name;
+            document.getElementById('typingAvatar').className = `w-8 h-8 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-sm`;
+            document.getElementById('typingAvatar').textContent = member.avatar;
+            document.getElementById('typingAction').textContent = 
+                mode === 'chat' ? '正在发言...' : 
+                mode === 'private' ? '正在输入...' : 
+                mode === 'mention' ? '回复@...' : '思考中...';
+            
+            if (index && mode !== 'chat' && mode !== 'private') {
+                document.getElementById('replyProgress').textContent = `(${index}/10)`;
+            } else {
+                document.getElementById('replyProgress').textContent = '';
+            }
+            
+            indicator.classList.remove('hidden');
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator').classList.add('hidden');
+        }
+
+        function highlightMember(index) {
+            const card = document.getElementById(`member-${index}`);
+            if (card) card.classList.add('replying');
+        }
+
+        function unhighlightMember(index) {
+            const card = document.getElementById(`member-${index}`);
+            if (card) card.classList.remove('replying');
+        }
+
+        function updateQueueBadge(current) {
+            const badge = document.getElementById('replyQueueBadge');
+            const count = document.getElementById('queueCount');
+            badge.classList.remove('hidden');
+            count.textContent = `${current}/10`;
+        }
+
+        function hideQueueBadge() {
+            document.getElementById('replyQueueBadge').classList.add('hidden');
+        }
+
+        function clearChat() {
+            document.getElementById('chatContainer').innerHTML = '';
+            if (currentTab === 'group') {
+                chatHistory = [];
+            } else {
+                privateChats[currentTab] = [];
+            }
+            messageCount = 0;
+            document.getElementById('msgCount').textContent = '0 msgs';
+            addSystemMessage('聊天记录已清空');
+        }
+
+        function toggleTransferModal() {
+            document.getElementById('transferModal').classList.toggle('hidden');
+        }
+
+        function setAmount(amount) {
+            document.getElementById('transferAmount').value = amount;
+        }
+
+        async function executeTransfer() {
+            const targetId = document.getElementById('transferTarget').value;
+            const amount = document.getElementById('transferAmount').value;
+            
+            if (!targetId || !amount) {
+                showToast('❌', '请填写完整信息', 'red');
+                return;
+            }
+            
+            const member = members.find(m => m.id === targetId);
+            toggleTransferModal();
+            
+            addSystemMessage(`💸 管理员向 ${member.name} 转账 ${Number(amount).toLocaleString()} DSK`);
+            
+            // Create private chat if not exists
+            if (!document.getElementById(`tab-${member.id}`)) {
+                createPrivateTab(member);
+            }
+            
+            // Send thank you in private
+            setTimeout(async () => {
+                await handlePrivateReply(member, `收到转账 ${amount} DSK，表示感谢`);
+            }, 1000);
+            
+            showToast('✅', `转账成功`);
+        }
+
+        function showToast(title, message, color = 'green') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('border-green-500', 'border-red-500');
+            toast.classList.add(`border-${color}-500`);
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => toast.classList.add('translate-x-full'), 3000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            stopAutoChat();
+        });
+    </script>
+</body>
+</html>
